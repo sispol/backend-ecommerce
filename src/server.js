@@ -3,9 +3,6 @@ const app = express()
 require('dotenv').config()
 const portExpress = process.env.EXPRESS_PORT
 
-console.log(portExpress)
-console.log(process.env.EXPRESS_PORT)
-
 const routesProd = require('./routes/index')
 const routesCart = require('./routes/cartindex')
 
