@@ -78,7 +78,7 @@ class Contenedor {
 
 const productos = new Contenedor('./productos.txt');
 
-router.get('/productos', async(req,res)=> {
+router.get('/', async(req,res)=> {
     cntProd = Object.keys(await productos.getAll()).length
     if (cntProd > 0) {
         res.status(200).json(await productos.getAll())
@@ -87,7 +87,7 @@ router.get('/productos', async(req,res)=> {
     }
 })
 
-router.get('/productos/:id',async(req,res) => {
+router.get('/:id',async(req,res) => {
     prodId = Number(req.params.id)
 
     if (await productos.getById(prodId) === undefined) {
@@ -97,7 +97,7 @@ router.get('/productos/:id',async(req,res) => {
     }
 })
 
-router.post('/productos',userAuth , async (req,res) => {
+router.post('/',userAuth , async (req,res) => {
     tempId=0
     prods = await productos.getAll()
     cntProds = prods.length
@@ -108,17 +108,25 @@ router.post('/productos',userAuth , async (req,res) => {
         id=tempId+1
     });
     
-    const { title, price, thumbnail } = req.body
-    prods.push({id,title,price,thumbnail})
-    productos.save(prods)
+    const { title, price, description, code, thumbnail, stock } = req.body
+    //id,timestamp, nombre, descripcion, código, foto (url), precio, stock
+
+    timestamp = Date.now()
+
+    prods.push({id,timestamp,title,description,code,thumbnail,price,stock})
+    await productos.save(prods)
     res.status(201).json(await productos.getById(id))
 })
 
-router.put('/productos/:id',userAuth, async (req,res) => {
+router.put('/:id',userAuth, async (req,res) => {
     id = Number(req.params.id)
+    timestamp = Date.now()
     title = req.body.title
-    price = req.body.price
+    description = req.body.description
+    code = req.body.code
     thumbnail = req.body.thumbnail
+    price = req.body.price
+    stock = req.body.stock
     let resultado = "";
     let i;
 
@@ -129,13 +137,17 @@ router.put('/productos/:id',userAuth, async (req,res) => {
             resultado = 'encontrado';
             products.splice(i, 1, {
                                         id: products[i].id,
+                                        timestamp: timestamp,
                                         title: title,
+                                        description: description,
+                                        code: code,
+                                        thumbnail: thumbnail,
                                         price: price,
-                                        thumbnail: thumbnail
+                                        stock: stock
                                     }); 
             console.log(products)
             await productos.save(products)
-            res.status(201).json(productos.getById(id))
+            res.status(201).json(await productos.getById(id))
         } 
     }
 
@@ -144,7 +156,7 @@ router.put('/productos/:id',userAuth, async (req,res) => {
     }
 })
 
-router.delete('/productos/:id',userAuth, async(req,res) => {
+router.delete('/:id',userAuth, async(req,res) => {
     id = Number(req.params.id)
     const prodActual = await productos.getAll()
     if (await productos.getById(id) !== undefined) {
